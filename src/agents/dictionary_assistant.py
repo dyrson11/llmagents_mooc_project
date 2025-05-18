@@ -1,13 +1,14 @@
+import re
 import copy
 import json
 import logging
 
-from typing import Dict, Any
+from typing import Dict, Any, cast
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
-from ..classes import AgentState
+from ..classes.state import AgentState
 from ..utils.llm import get_llm, try_parse_tool_calls
 from ..utils.dictionary_search import DictionarySearch
 from ..classes.pydantic_model import Palabra, Sufijo, Posposicion
@@ -87,7 +88,7 @@ class DictionaryAssistant:
         diccionario_general.update(dictionary["posposiciones"])
         return diccionario_general, dictionary["sufijos"]
 
-    async def run(self, agent_state: AgentState) -> Dict[str, Any]:
+    def run(self, agent_state: AgentState) -> Dict[str, Any]:
         """
         Generate a dictionary of terms based on the research state.
         """
@@ -106,21 +107,33 @@ class DictionaryAssistant:
         )
         user_message = HumanMessage(
             content=self.user_prompt.format(
-                sentence=agent_state.sentence,
-                dictionary_analysis=dictionary_result,
+                SENTENCE=agent_state.sentence,
+                DICTIONARY=dictionary_result,
             )
         )
 
+        agent_state.messages.append(user_message)
+
         response = self.llm.invoke([system_message, user_message])
 
-        print(response)
+        print(response.content)
+
+        dictionary_analysis = re.search(
+            r"<dictionary_assistant_analysis>(.*?)</dictionary_assistant_analysis>",
+            response.content,
+            re.DOTALL,
+        )
+
+        agent_state.dictionary_analysis = (
+            dictionary_analysis.group(1) if dictionary_analysis else None
+        )
+
         if response.additional_kwargs.get("tool_calls"):
             return agent_state
 
         # Parse the response to extract the tool calls
         parsed_response = try_parse_tool_calls(response.content)
-
-        print(agent_state)
+        agent_state.messages.append(cast(AIMessage, response))
 
         # # Get the model's response
         # response = cast(AIMessage, parsed_response)

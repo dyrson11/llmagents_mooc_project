@@ -16,8 +16,10 @@ def get_llm(
         repo_id=model_name,
         provider=provider,
         huggingfacehub_api_token=os.environ["HF_TOKEN"],
+        max_new_tokens=8192,
     )
-    return llm
+    chat = ChatHuggingFace(llm=llm, verbose=True, max_tokens=8192)
+    return chat
 
 
 def try_parse_tool_calls(content: str):

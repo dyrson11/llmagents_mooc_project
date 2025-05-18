@@ -1,11 +1,15 @@
-from typing import TypedDict, NotRequired, Required
+from pydantic import BaseModel
+from typing import Optional, List
+
+from langchain_core.messages import AnyMessage
 
 
 # Define the input state
-class AgentState(TypedDict, total=False):
-    sentence: Required[str]
-    source_language: Required[str]
-    target_language: Required[str]
-    dictionary_search: NotRequired[str]
-    dictionary_analysis: NotRequired[str]
-    translation: NotRequired[str]
+class AgentState(BaseModel):
+    sentence: str
+    source_language: str
+    target_language: str
+    dictionary_search: Optional[str] = None
+    dictionary_analysis: Optional[str] = None
+    translation: Optional[str] = None
+    messages: Optional[List[AnyMessage]] = []

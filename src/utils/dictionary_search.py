@@ -5,12 +5,17 @@ from rapidfuzz import fuzz
 from typing import Dict, Any
 from heapq import heappush, heappop
 
+from .clean import fix_apostrophes_and_quotes
 from ..classes.pydantic_model import Palabra, Sufijo, Posposicion
 
 
 class DictionarySearch:
     def __init__(self, dictionary):
         self.dictionary = dictionary
+
+    def tokenize(self, sentence: str) -> str:
+        """Tokeniza una oracion."""
+        return sentence.split()
 
     def fast_similarity(self, a, b):
         return fuzz.ratio(a, b) / 100.0  # Normalize to 0-1
@@ -68,7 +73,7 @@ class DictionarySearch:
             final_results.append((word, sim, path))
         return final_results
 
-    def get_filtered_characters(sentence):
+    def get_filtered_characters(self, sentence):
         result = []
         for char in sentence:
             # Get Unicode category (e.g., "Pd" for dash punctuation, "Po" for other punctuation)
@@ -123,7 +128,7 @@ class DictionarySearch:
         Se devuelve el prompt generado.
         """
         sentence = re.sub(r"\s+", " ", sentence).strip()
-        sentence = self.fix_apostrophes_and_quotes(sentence)
+        sentence = fix_apostrophes_and_quotes(sentence)
         filtered_sentence = self.get_filtered_characters(sentence).lower()
         word_list = self.tokenize(filtered_sentence)
         possible_translations = []
