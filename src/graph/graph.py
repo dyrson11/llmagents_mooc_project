@@ -1,8 +1,11 @@
 from langgraph.graph import StateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
 
 from ..classes.state import AgentState
 from ..agents.dictionary_assistant import DictionaryAssistant
 from ..agents.translation_expert import TranslationExpert
+from ..agents.translation_evaluator import TranslationEvaluator
+from ..agents.prompt_rewriter import PromptRewriter
 
 
 class Graph:
@@ -15,19 +18,21 @@ class Graph:
         sentence: str = "",
         source_language: str = "es",
         target_language: str = "en",
+        dataset_path: str = "",
     ):
         self.input_state = AgentState(
             sentence=sentence,
             source_language=source_language,
             target_language=target_language,
         )
-
+        self.dataset_path = dataset_path
         self._init_nodes()
         self.create_graph()
 
     def _init_nodes(self):
         self.dictionary_agent = DictionaryAssistant()
         self.translation_agent = TranslationExpert()
+        self.llm_evaluator = TranslationEvaluator(dataset_dir=self.dataset_path)
 
     def get_graph(self):
         return self.graph
@@ -48,6 +53,7 @@ class Graph:
         self.graph.add_node("dictionary_assistant", self.dictionary_agent.run)
         # self.graph.add_node("tools", ToolNode(tools))
         self.graph.add_node("translation_expert", self.translation_agent.run)
+        self.graph.add_node("llm_evaluator", self.llm_evaluator.run)
 
         # Define edges: these determine how the control flow moves
         self.graph.add_edge("start", "dictionary_assistant")
@@ -66,9 +72,9 @@ class Graph:
         #     tools_condition,
         # )
         self.graph.add_edge("dictionary_assistant", "translation_expert")
-
+        self.graph.add_edge("translation_expert", "llm_evaluator")
         self.graph.set_entry_point("start")
-        self.graph.set_finish_point("translation_expert")
+        self.graph.set_finish_point("llm_evaluator")
 
     def run(self):
         """
