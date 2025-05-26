@@ -13,7 +13,9 @@ def main(
     Main function to run the agent with an initial state.
     """
     # Create an instance of the Graph class
-    graph = Graph(sentence, source_language, target_language)
+    graph = Graph(
+        sentence, source_language, target_language, dataset_path="data/dataset/test.csv"
+    )
 
     result = graph.run()
 
@@ -23,7 +25,7 @@ def main(
 
 
 if __name__ == "__main__":
-    sentence = "Kunjams aru jaqukipañataki, qilqañatak pacha apsta?"
+    sentence = "Wali askinakw yatiqawayta, ukhamarak yaqha jaqinakarus uñt 'awayta."
     source_language = "Aymara"
     target_language = "Spanish"
     main(sentence, source_language, target_language)
