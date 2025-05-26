@@ -1,3 +1,4 @@
+import pandas as pd
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -11,5 +12,9 @@ class AgentState(BaseModel):
     target_language: str
     dictionary_search: Optional[str] = None
     dictionary_analysis: Optional[str] = None
+    translation_analysis: Optional[str] = None
     translation: Optional[str] = None
     messages: Optional[List[AnyMessage]] = []
+    prompt_agent_translation_expert: Optional[str] = None
+    prompt_agent_dictionary_assistant: Optional[str] = None
+    changes: Optional[str] = None

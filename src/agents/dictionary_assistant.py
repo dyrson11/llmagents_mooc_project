@@ -1,6 +1,7 @@
 import re
 import copy
 import json
+import pathlib
 import logging
 
 from typing import Dict, Any, cast
@@ -20,9 +21,13 @@ class DictionaryAssistant:
     A class to interact with API to generate a dictionary of terms.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        system_prompt_path="output/new_prompts/dictionary_assistant/iteration_{i}.txt",
+    ) -> None:
         # Configure model
         self.llm = get_llm(model_name="Qwen/Qwen3-30B-A3B", provider="fireworks-ai")
+        self.system_prompt_path = system_prompt_path
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
         self.dictionary, self.suffixes = self.load_dictionary(
@@ -37,6 +42,22 @@ class DictionaryAssistant:
             "industry": "Unknown",
             "hq_location": "Unknown",
         }
+
+    def load_system_prompt(self, path) -> str:
+        """
+        Load the system prompt from a file.
+        """
+        for i in range(1, 10000):
+            # check if the file exists with pathlib
+            if pathlib.Path(path.format(i=i)).exists():
+                continue
+            if i == 1:
+                # If the file does not exist, use the default system prompt
+                self.system_prompt = system_prompt
+                break
+            with open(path.format(i=i - 1), "r", encoding="utf-8") as f:
+                self.system_prompt = f.read()
+            break
 
     def load_dictionary(self, dictionary_path: str) -> Dict[str, Any]:
         """
@@ -99,12 +120,15 @@ class DictionaryAssistant:
             self.suffixes,
         )
 
-        system_message = SystemMessage(
-            content=self.system_prompt.format(
-                SOURCE_LANGUAGE=agent_state.source_language,
-                TARGET_LANGUAGE=agent_state.target_language,
-            )
+        self.load_system_prompt(self.system_prompt_path)
+        agent_state.prompt_agent_dictionary_assistant = self.system_prompt
+
+        system_prompt = self.system_prompt.format(
+            SOURCE_LANGUAGE=agent_state.source_language,
+            TARGET_LANGUAGE=agent_state.target_language,
         )
+
+        system_message = SystemMessage(content=system_prompt)
         user_message = HumanMessage(
             content=self.user_prompt.format(
                 SENTENCE=agent_state.sentence,
@@ -112,6 +136,7 @@ class DictionaryAssistant:
             )
         )
 
+        agent_state.messages.append(system_message)
         agent_state.messages.append(user_message)
 
         response = self.llm.invoke([system_message, user_message])
