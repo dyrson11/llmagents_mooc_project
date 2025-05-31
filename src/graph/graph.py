@@ -86,16 +86,19 @@ class Graph:
         print("")
         print("=" * 50)
         print(f"Source Sentence: {result['sentence']}")
-        print(f"Target Sentence: {result['target_sentence']}")
         print(f"Final Translation: {final_translation}")
-
-        if len(final_translation.strip()) == 0:
-            bleu = 0
-            chrf = 0
+        if self.training:
+            print(f"Target Sentence: {result['target_sentence']}")
+            if len(final_translation.strip()) == 0:
+                bleu = 0
+                chrf = 0
+            else:
+                bleu, chrf = calculate_score_report(
+                    final_translation, [result["target_sentence"]], score_only=True
+                )
+            print(f"BLEU: {bleu}, CHRF: {chrf}")
+            print("=" * 50)
+            return final_translation, bleu, chrf, result["messages"]
         else:
-            bleu, chrf = calculate_score_report(
-                final_translation, [result["target_sentence"]], score_only=True
-            )
-        print(f"BLEU: {bleu}, CHRF: {chrf}")
-        print("=" * 50)
-        return final_translation, bleu, chrf, result["messages"]
+            print("=" * 50)
+            return final_translation, None, None, result["messages"]

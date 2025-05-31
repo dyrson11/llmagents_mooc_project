@@ -25,12 +25,13 @@ def cycle(
     messages = []
     folder = "/".join(output_file.split("/")[:-1])
     os.makedirs(folder, exist_ok=True)
-    with open(output_file, "r") as f:
-        result_list = f.read().splitlines()
-    with open(f"{folder}/bleu.txt", "r") as f:
-        bleu_list = f.read().splitlines()
-    with open(f"{folder}/chrf.txt", "r") as f:
-        chrf_list = f.read().splitlines()
+    if os.path.exists(output_file):
+        with open(output_file, "r") as f:
+            result_list = f.read().splitlines()
+        with open(f"{folder}/bleu.txt", "r") as f:
+            bleu_list = f.read().splitlines()
+        with open(f"{folder}/chrf.txt", "r") as f:
+            chrf_list = f.read().splitlines()
 
     messages_folder = f"{"/".join(output_file.split("/")[:-2])}/messages"
     os.makedirs(messages_folder, exist_ok=True)
@@ -63,21 +64,23 @@ def main(
     cleaned_folder: str = "",
     source_language: str = "es",
     target_language: str = "en",
-    mode: str = "test",
+    mode: str = "dev",
     dtype: str = "original",
     starts_from_idx: int = 0,
+
+    dev_path: str = "",
 ):
     """
     Main function to run the agent with an initial state.
     """
     # Load the dataset
-    dataset = load_and_split_dataset(original_folder, cleaned_folder, dataset_path)
-    training = True if mode == "train" else "test"
+    dataset = load_and_split_dataset(original_folder, cleaned_folder, dataset_path, dev_path)
+    training = True if mode == "train" else False
     cycle(
         dataset[dtype][mode],
         source_language,
         target_language,
-        f"output/translations/{dtype}/{mode}.txt",
+        f"output/translations/{dtype}/{mode}/output.txt",
         training=training,
         starts_from_idx=starts_from_idx,
     )
@@ -94,9 +97,9 @@ if __name__ == "__main__":
     cleaned_folder = "data/dataset/cleaned"
     source_language = "Aymara"
     target_language = "Spanish"
-    mode = "train"
+    mode = "dev"
     dtype = "original"
-    starts_from_idx =173
+    starts_from_idx = 0
     main(
         dataset_path,
         original_folder,
