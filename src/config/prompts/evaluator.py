@@ -127,22 +127,32 @@ Explanation: The translation expert introduced words that were not present in th
 
 user_prompt = """Here is the context for your evaluation:
 
-1. dictionary_assistant's ranked list of translation candidates:
-<dictionary_assistant_analysis>
-{dictionary_assistant_analysis}
-</dictionary_assistant_analysis>
-
-2. translation_expert's selected final translation and reasoning:
-<translation_expert_analysis>
-{translation_expert_analysis}
-</translation_expert_analysis>
-
-3. Source sentence (original language):
+1. INPUT: Source sentence (original language):
 <source_sentence>
 {sentence}
 </source_sentence>
 
-4. Human-labeled reference translation (gold standard):
+2. INPUT: Dictionary search with the provided dictionary:
+<dictionary>
+{dictionary}
+</dictionary>
+
+3. dictionary_assistant's ranked list of translation candidates:
+<dictionary_assistant_analysis>
+{dictionary_assistant_analysis}
+</dictionary_assistant_analysis>
+
+4. translation_expert's selected final translation and reasoning:
+<translation_expert_analysis>
+{translation_expert_analysis}
+</translation_expert_analysis>
+
+5. translation_expert's final translation:
+<final_translation>
+{translation}
+</final_translation>
+
+6. Human-labeled reference translation (gold standard):
 <reference_translation>
 {reference}
 </reference_translation>

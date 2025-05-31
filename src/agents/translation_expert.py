@@ -8,7 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 logger = logging.getLogger(__name__)
 
 from ..classes.state import AgentState
-from ..utils.llm import get_llm
+from ..utils.llm import get_llm, invoke_llm
 from ..config.prompts.translation import system_prompt, user_prompt
 
 
@@ -65,7 +65,7 @@ class TranslationExpert:
         agent_state.messages.append(system_message)
         agent_state.messages.append(user_message)
 
-        response = self.llm.invoke([system_message, user_message])
+        response = invoke_llm(self.llm, system_message, user_message)
         agent_state.messages.append(cast(AIMessage, response))
         agent_state.translation_analysis = response.content
         translation = re.search(

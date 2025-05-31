@@ -10,9 +10,9 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
-from ..utils.llm import get_llm
 from ..classes.state import AgentState
 from .prompt_rewriter import PromptRewriter
+from ..utils.llm import get_llm, invoke_llm
 from ..config.prompts.evaluator import system_prompt, user_prompt
 
 
@@ -21,14 +21,14 @@ class TranslationEvaluator:
     A class to interact with API to generate a dictionary of terms.
     """
 
-    def __init__(self, dataset_dir) -> None:
+    def __init__(self, dataset: pd.DataFrame) -> None:
         # Configure model
         self.llm = get_llm(model_name="Qwen/Qwen3-235B-A22B", provider="fireworks-ai")
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
-        self.prompt_rewriter_agent = PromptRewriter(dataset_dir=dataset_dir)
+        self.prompt_rewriter_agent = PromptRewriter(dataset=dataset)
 
-        self.dataset = pd.read_csv(dataset_dir)
+        self.dataset = dataset
 
     def run(self, agent_state: AgentState) -> Dict[str, Any]:
         """
@@ -38,6 +38,8 @@ class TranslationEvaluator:
         target_sentence = self.dataset.loc[
             self.dataset["source_sentence"] == source_sentence, "target_sentence"
         ].values[0]
+
+        agent_state.target_sentence = target_sentence
 
         system_message = SystemMessage(
             content=self.system_prompt.format(
@@ -49,11 +51,13 @@ class TranslationEvaluator:
             content=self.user_prompt.format(
                 sentence=source_sentence,
                 reference=target_sentence,
+                dictionary=agent_state.dictionary_search,
+                translation=agent_state.translation,
                 dictionary_assistant_analysis=agent_state.dictionary_analysis,
                 translation_expert_analysis=agent_state.translation_analysis,
             )
         )
-        response = self.llm.invoke([system_message, user_message])
+        response = invoke_llm(self.llm, system_message, user_message)
         print(response)
         agent_state.messages.append(user_message)
         agent_state.messages.append(cast(AIMessage, response))

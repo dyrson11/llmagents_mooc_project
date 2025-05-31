@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
-from ..utils.llm import get_llm
+from ..utils.llm import get_llm, invoke_llm
 from ..config.prompts.rewriter import system_prompt, user_prompt
 
 
@@ -18,7 +18,7 @@ class PromptRewriter:
     A class to interact with API to generate a dictionary of terms.
     """
 
-    def __init__(self, dataset_dir) -> None:
+    def __init__(self, dataset: pd.DataFrame) -> None:
         # Configure model
         self.llm = get_llm(model_name="Qwen/Qwen3-235B-A22B", provider="fireworks-ai")
         self.tools = self._init_tools()
@@ -26,7 +26,7 @@ class PromptRewriter:
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
 
-        self.dataset = pd.read_csv(dataset_dir)
+        self.dataset = dataset
 
     def _init_tools(self):
         """
@@ -60,11 +60,15 @@ class PromptRewriter:
         new_prompt = prompt
         changes = None
         for _ in range(5):
-            response = self.llm.invoke([system_message, user_message])
+            try:
+                response = invoke_llm(self.llm, system_message, user_message)
+            except Exception as e:
+                print(e)
+                continue
             print(response.content)
             # check if response has tool calls
             if not hasattr(response, "tool_calls") or not response.tool_calls:
-                continue
+                break
             print(response.tool_calls)
             for tool_call in response.tool_calls:
                 if "name" not in tool_call:
@@ -103,7 +107,7 @@ class PromptRewriter:
             print(
                 f"Prompt for does not contain the string to replace. Please check the prompt."
             )
-            return "", "No changes made to the prompt."
+            return prompt, "No changes made to the prompt."
 
         new_prompt = prompt.replace(text_to_replace, new_text)
         changes = (

@@ -22,6 +22,17 @@ def get_llm(
     return chat
 
 
+def invoke_llm(llm, system_message, user_message, max_attempts=10):
+    result = ""
+    for i in range(max_attempts):
+        try:
+            result = llm.invoke([system_message, user_message])
+        except:
+            continue
+        break
+    return result
+
+
 def try_parse_tool_calls(content: str):
     """Try parse the tool calls."""
     tool_calls = []

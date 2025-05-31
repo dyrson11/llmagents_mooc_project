@@ -10,9 +10,9 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 logger = logging.getLogger(__name__)
 
 from ..classes.state import AgentState
-from ..utils.llm import get_llm, try_parse_tool_calls
 from ..utils.dictionary_search import DictionarySearch
 from ..classes.pydantic_model import Palabra, Sufijo, Posposicion
+from ..utils.llm import get_llm, try_parse_tool_calls, invoke_llm
 from ..config.prompts.dictionary import system_prompt, user_prompt
 
 
@@ -119,7 +119,7 @@ class DictionaryAssistant:
             self.dictionary,
             self.suffixes,
         )
-
+        agent_state.dictionary_search = dictionary_result
         self.load_system_prompt(self.system_prompt_path)
         agent_state.prompt_agent_dictionary_assistant = self.system_prompt
 
@@ -139,7 +139,8 @@ class DictionaryAssistant:
         agent_state.messages.append(system_message)
         agent_state.messages.append(user_message)
 
-        response = self.llm.invoke([system_message, user_message])
+        # response = self.llm.invoke([system_message, user_message])
+        response = invoke_llm(self.llm, system_message, user_message)
 
         print(response.content)
 

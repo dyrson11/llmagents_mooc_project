@@ -15,6 +15,7 @@ Before making any changes, conduct a thorough evaluation. Wrap your evaluation i
   - Propose potential solutions
   - Consider arguments for and against each solution
   - Evaluate potential challenges or trade-offs for each solution
+  - Validate that the proposed changes do not include very specific examples that could lead to overfitting
 - Double-check that all text_to_replace arguments exactly match the original prompt text
 
 After your evaluation, explain the changes you will make and how they address the feedback. Include your explanation within <explanation> tags:

@@ -1,6 +1,8 @@
+import pandas as pd
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
+from ..utils.metrics import calculate_score_report
 from ..classes.state import AgentState
 from ..agents.dictionary_assistant import DictionaryAssistant
 from ..agents.translation_expert import TranslationExpert
@@ -15,24 +17,18 @@ class Graph:
 
     def __init__(
         self,
-        sentence: str = "",
-        source_language: str = "es",
-        target_language: str = "en",
-        dataset_path: str = "",
+        dataset: pd.DataFrame = pd.DataFrame(),
+        training: bool = False,
     ):
-        self.input_state = AgentState(
-            sentence=sentence,
-            source_language=source_language,
-            target_language=target_language,
-        )
-        self.dataset_path = dataset_path
+        self.dataset = dataset
+        self.training = training
         self._init_nodes()
         self.create_graph()
 
     def _init_nodes(self):
         self.dictionary_agent = DictionaryAssistant()
         self.translation_agent = TranslationExpert()
-        self.llm_evaluator = TranslationEvaluator(dataset_dir=self.dataset_path)
+        self.llm_evaluator = TranslationEvaluator(dataset=self.dataset)
 
     def get_graph(self):
         return self.graph
@@ -72,15 +68,30 @@ class Graph:
         #     tools_condition,
         # )
         self.graph.add_edge("dictionary_assistant", "translation_expert")
-        self.graph.add_edge("translation_expert", "llm_evaluator")
+        if self.training:
+            self.graph.add_edge("translation_expert", "llm_evaluator")
+            self.graph.set_finish_point("llm_evaluator")
+        else:
+            self.graph.set_finish_point("translation_expert")
         self.graph.set_entry_point("start")
-        self.graph.set_finish_point("llm_evaluator")
 
-    def run(self):
+    def run(self, input_state: AgentState) -> AgentState:
         """
         Run the agent with the input state.
         """
         compiled_graph = self.graph.compile()
         # Run the agent with the input state
-        result = compiled_graph.invoke(self.input_state)
-        return result
+        result = compiled_graph.invoke(input_state)
+        final_translation = result["translation"]
+        print("")
+        print("=" * 50)
+        print(f"Source Sentence: {result['sentence']}")
+        print(f"Target Sentence: {result['target_sentence']}")
+        print(f"Final Translation: {final_translation}")
+
+        bleu, chrf = calculate_score_report(
+            final_translation, [result["target_sentence"]], score_only=True
+        )
+        print(f"BLEU: {bleu}, CHRF: {chrf}")
+        print("=" * 50)
+        return final_translation, bleu, chrf

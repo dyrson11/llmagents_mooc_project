@@ -10,6 +10,7 @@ class AgentState(BaseModel):
     sentence: str
     source_language: str
     target_language: str
+    target_sentence: Optional[str] = None
     dictionary_search: Optional[str] = None
     dictionary_analysis: Optional[str] = None
     translation_analysis: Optional[str] = None
