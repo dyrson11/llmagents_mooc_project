@@ -82,7 +82,7 @@ Be thorough and comprehensive in your detailed analysis. It's acceptable for thi
 After your detailed analysis, structure your final output as follows:
 
 <evaluation_score>
-Provide a score from 0-100 or a Pass/Fail assessment
+Provide a score from 0-100
 </evaluation_score>
 
 <summary>

@@ -123,9 +123,14 @@ class DictionaryAssistant:
         self.load_system_prompt(self.system_prompt_path)
         agent_state.prompt_agent_dictionary_assistant = self.system_prompt
 
-        system_prompt = self.system_prompt.format(
-            SOURCE_LANGUAGE=agent_state.source_language,
-            TARGET_LANGUAGE=agent_state.target_language,
+        # system_prompt = self.system_prompt.format(
+        #     SOURCE_LANGUAGE=agent_state.source_language,
+        #     TARGET_LANGUAGE=agent_state.target_language,
+        # )
+        system_prompt = self.system_prompt.replace(
+            "{SOURCE_LANGUAGE}", agent_state.source_language
+        ).replace(
+            "{TARGET_LANGUAGE}", agent_state.target_language
         )
 
         system_message = SystemMessage(content=system_prompt)
