@@ -22,12 +22,22 @@ def cycle(
     result_list = []
     bleu_list = []
     chrf_list = []
+    messages = []
     folder = "/".join(output_file.split("/")[:-1])
     os.makedirs(folder, exist_ok=True)
+    with open(output_file, "r") as f:
+        result_list = f.read().splitlines()
+    with open(f"{folder}/bleu.txt", "r") as f:
+        bleu_list = f.read().splitlines()
+    with open(f"{folder}/chrf.txt", "r") as f:
+        chrf_list = f.read().splitlines()
+
+    messages_folder = f"{"/".join(output_file.split("/")[:-2])}/messages"
+    os.makedirs(messages_folder, exist_ok=True)
     for index, row in tqdm(dataset.iterrows(), total=dataset.shape[0]):
         if index < starts_from_idx:
             continue
-        result, bleu, chrf = graph.run(
+        result, bleu, chrf, messages = graph.run(
             input_state=AgentState(
                 sentence=row["source_sentence"],
                 source_language=source_language,
@@ -43,6 +53,8 @@ def cycle(
             f.write("\n".join(bleu_list))
         with open(f"{folder}/chrf.txt", "w") as f:
             f.write("\n".join(chrf_list))
+        with open(f"{messages_folder}/{index}.txt", "w") as f:
+            f.write("\n".join(message.__str__() for message in messages))
 
 
 def main(
@@ -83,8 +95,8 @@ if __name__ == "__main__":
     source_language = "Aymara"
     target_language = "Spanish"
     mode = "train"
-    dtype = "cleaned"
-    starts_from_idx = 0
+    dtype = "original"
+    starts_from_idx =173
     main(
         dataset_path,
         original_folder,
