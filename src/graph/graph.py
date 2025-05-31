@@ -98,4 +98,4 @@ class Graph:
             )
         print(f"BLEU: {bleu}, CHRF: {chrf}")
         print("=" * 50)
-        return final_translation, bleu, chrf
+        return final_translation, bleu, chrf, result["messages"]
