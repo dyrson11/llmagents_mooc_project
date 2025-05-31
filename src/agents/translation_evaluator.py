@@ -58,10 +58,10 @@ class TranslationEvaluator:
             )
         )
         response = invoke_llm(self.llm, system_message, user_message)
-        print(response)
+        # print(response)
         agent_state.messages.append(user_message)
         agent_state.messages.append(cast(AIMessage, response))
-        print(response.content)
+        # print(response.content)
 
         # self.prompt_replacer(response.content, agent_state)
         self.existing_prompts = {
@@ -79,7 +79,11 @@ class TranslationEvaluator:
         handoff_match = re.findall(handoff_pattern, response, re.DOTALL)
         changes = ""
         for handoff in handoff_match:
-            handoff_dict = json.loads(handoff)
+            try:
+                handoff_dict = json.loads(handoff)
+            except:
+                logger.warning("Bad JSON format.")
+                continue
             agent_name = handoff_dict.get("agent_name")
             feedback = handoff_dict.get("feedback")
             if not agent_name:

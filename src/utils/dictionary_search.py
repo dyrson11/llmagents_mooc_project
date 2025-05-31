@@ -137,5 +137,5 @@ class DictionarySearch:
             possible_translations.append(translations)
 
         prompt = self.build_prompt(word_list, possible_translations)
-        print(prompt)
-        return prompt
+        # print(prompt)
+        return prompt, sentence

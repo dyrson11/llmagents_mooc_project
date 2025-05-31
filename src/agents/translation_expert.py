@@ -74,7 +74,7 @@ class TranslationExpert:
             re.IGNORECASE + re.DOTALL,
         )
         agent_state.translation = translation.group(1) if translation else ""
-        print(response.content)
+        # print(response.content)
 
         # # Get the model's response
         # response = cast(AIMessage, parsed_response)

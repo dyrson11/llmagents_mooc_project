@@ -114,7 +114,7 @@ class DictionaryAssistant:
         Generate a dictionary of terms based on the research state.
         """
 
-        dictionary_result = self.dictionary_search.process_sentence(
+        dictionary_result, sentence = self.dictionary_search.process_sentence(
             agent_state.sentence,
             self.dictionary,
             self.suffixes,
@@ -142,7 +142,7 @@ class DictionaryAssistant:
         # response = self.llm.invoke([system_message, user_message])
         response = invoke_llm(self.llm, system_message, user_message)
 
-        print(response.content)
+        # print(response.content)
 
         dictionary_analysis = re.search(
             r"<dictionary_assistant_analysis>(.*?)</dictionary_assistant_analysis>",

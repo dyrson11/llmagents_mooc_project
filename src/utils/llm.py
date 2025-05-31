@@ -48,7 +48,7 @@ def try_parse_tool_calls(content: str):
             if isinstance(func["arguments"], str):
                 func["arguments"] = json.loads(func["arguments"])
         except json.JSONDecodeError as e:
-            print(f"Failed to parse tool calls: the content is {m.group(1)} and {e}")
+            # print(f"Failed to parse tool calls: the content is {m.group(1)} and {e}")
             pass
     if tool_calls:
         if offset > 0 and content[:offset].strip():

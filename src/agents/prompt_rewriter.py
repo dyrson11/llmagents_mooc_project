@@ -60,24 +60,22 @@ class PromptRewriter:
         new_prompt = prompt
         changes = None
         for _ in range(5):
-            try:
-                response = invoke_llm(self.llm, system_message, user_message)
-            except Exception as e:
-                print(e)
+            response = invoke_llm(self.llm, system_message, user_message)
+            if response == "":
                 continue
-            print(response.content)
+            # print(response.content)
             # check if response has tool calls
             if not hasattr(response, "tool_calls") or not response.tool_calls:
                 break
-            print(response.tool_calls)
+            # print(response.tool_calls)
             for tool_call in response.tool_calls:
                 if "name" not in tool_call:
-                    print("Tool call does not have a name attribute. Skipping.")
+                    # print("Tool call does not have a name attribute. Skipping.")
                     continue
                 if tool_call["name"] != "replace_prompt":
-                    print(
-                        f"Tool call name '{tool_call['name']}' does not match 'replace_prompt'. Skipping."
-                    )
+                    # print(
+                    #     f"Tool call name '{tool_call['name']}' does not match 'replace_prompt'. Skipping."
+                    # )
                     continue
                 # Use the tool to replace the prompt
                 new_prompt, changes = self.replace_tool(
@@ -102,11 +100,11 @@ class PromptRewriter:
             text_to_replace (str): The text to replace in the prompt.
             new_text (str): The new text to replace with.
         """
-        print(f"Replacing '{text_to_replace}' with '{new_text}' in the prompt.")
+        # print(f"Replacing '{text_to_replace}' with '{new_text}' in the prompt.")
         if text_to_replace not in prompt:
-            print(
-                f"Prompt for does not contain the string to replace. Please check the prompt."
-            )
+            # print(
+            #     f"Prompt for does not contain the string to replace. Please check the prompt."
+            # )
             return prompt, "No changes made to the prompt."
 
         new_prompt = prompt.replace(text_to_replace, new_text)
